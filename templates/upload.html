@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+</head>
+<body>
+  <!-- 진행 상황 바 -->
+  <div class="progress-bar">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <!-- 눈 효과 -->
+  <div class="snow" style="left: 10%;">❄</div>
+  <div class="snow" style="left: 30%; animation-delay: -2s;">❄</div>
+  <div class="snow" style="left: 50%; animation-delay: -4s;">❄</div>
+  <div class="snow" style="left: 70%; animation-delay: -6s;">❄</div>
+  <div class="snow" style="left: 90%; animation-delay: -8s;">❄</div>
+
+  <!-- 한 줄 메시지 페이지 -->
+  <div class="container page active" id="message-page">
+    <h1>🎁 은비 구님을 향한 메시지 🎁</h1>
+    <form>
+      <div class="form-group">
+        <label for="short-message">전하고 싶은 한 줄 메시지<span class="required">*</span></label>
+        <input type="text" 
+            id="short-message" 
+            placeholder="따뜻한 마음을 전해보세요" 
+            required
+            autocomplete="off">
+      </div>
+      <div class="buttons">
+        <button type="button" onclick="nextPage('letter-page')">다음 단계 ▶</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 편지 페이지 -->
+  <div class="container page" id="letter-page">
+    <h1>🎁 은비 구님께 드리는 편지 🎁</h1>
+    <form>
+      <div class="form-group">
+        <label for="letter">마음을 담은 편지<span class="required">*</span></label>
+        <textarea id="letter" 
+            placeholder="소중한 마음을 담아 편지를 작성해주세요"
+            required></textarea>
+      </div>
+      <div class="buttons">
+        <button type="button" onclick="prevPage('message-page')">◀ 이전</button>
+        <button type="button" onclick="nextPage('photo-page')">다음 ▶</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 사진 업로드 페이지 -->
+  <div class="container page" id="photo-page">
+    <h1>🎁 은비 구님과의 추억 사진 🎁</h1>
+    <form id="final-form" onsubmit="return validateForm(event)">
+      <div class="form-group">
+        <label for="photo">추억이 담긴 사진<span class="required">*</span></label>
+        <input type="file" 
+               id="photo" 
+               accept="image/*" 
+               capture="environment"
+               onchange="previewImage(event)" 
+               required>
+        <div class="image-preview" id="preview">
+          이미지를 선택해주세요
+        </div>
+      </div>
+
+      <div class="form-group name-input">
+        <label for="sender-name">보내는 사람<span class="required">*</span></label>
+        <input type="text" 
+               id="sender-name" 
+               placeholder="이름을 입력해주세요" 
+               required
+               autocomplete="off">
+      </div>
+
+      <div class="buttons">
+        <button type="button" onclick="prevPage('letter-page')">◀ 이전</button>
+        <button type="submit">보내기 ✨</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let currentProgress = 33.33;
+    document.getElementById('progress').style.width = `${currentProgress}%`;
+
+    function nextPage(pageId) {
+      document.querySelector('.page.active').classList.remove('active');
+      document.getElementById(pageId).classList.add('active');
+      
+      currentProgress = pageId === 'letter-page' ? 66.66 : 100;
+      document.getElementById('progress').style.width = `${currentProgress}%`;
+      
+      window.scrollTo(0, 0);
+    }
+
+    function prevPage(pageId) {
+      document.querySelector('.page.active').classList.remove('active');
+      document.getElementById(pageId).classList.add('active');
+      
+      currentProgress = pageId === 'message-page' ? 33.33 : 66.66;
+      document.getElementById('progress').style.width = `${currentProgress}%`;
+      
+      window.scrollTo(0, 0);
+    }
+
+    function previewImage(event) {
+      const preview = document.getElementById('preview');
+      const file = event.target.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 200px; object-fit: contain;">`;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function validateForm(event) {
+      event.preventDefault();
+      
+      const senderName = document.getElementById('sender-name').value;
+      const photo = document.getElementById('photo').value;
+      
+      if (!senderName || !photo) {
+        alert('모든 필수 항목을 입력해주세요.');
+        return false;
+      }
+      
+      alert('메시지가 성공적으로 전송되었습니다! 🎄');
+      return false;
+    }
+
+    // iOS에서 가상 키보드 표시 시 뷰포트 조정 방지
+    const viewportMeta = document.createElement('meta');
+    viewportMeta.name = 'viewport';
+    viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+    document.getElementsByTagName('head')[0].appendChild(viewportMeta);
+  </script>
+</body>
+</html>
