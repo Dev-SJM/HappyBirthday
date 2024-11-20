@@ -6,11 +6,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
 </head>
 <body>
-  <!-- 진행 상황 바 -->
-  <div class="progress-bar">
-    <div class="progress" id="progress"></div>
-  </div>
-
   <!-- 눈 효과 -->
   <div class="snow" style="left: 10%;">❄</div>
   <div class="snow" style="left: 30%; animation-delay: -2s;">❄</div>
@@ -18,131 +13,197 @@
   <div class="snow" style="left: 70%; animation-delay: -6s;">❄</div>
   <div class="snow" style="left: 90%; animation-delay: -8s;">❄</div>
 
-  <!-- 한 줄 메시지 페이지 -->
-  <div class="container page active" id="message-page">
-    <h1>🎁 은비 구님을 향한 메시지 🎁</h1>
-    <form>
-      <div class="form-group">
-        <label for="short-message">전하고 싶은 한 줄 메시지<span class="required">*</span></label>
-        <input type="text" 
-            id="short-message" 
-            placeholder="따뜻한 마음을 전해보세요" 
-            required
-            autocomplete="off">
-      </div>
-      <div class="buttons">
-        <button type="button" onclick="nextPage('letter-page')">다음 단계 ▶</button>
-      </div>
-    </form>
+  <!-- 로딩 표시 -->
+  <div class="loading" id="loading">
+    <div class="loading-content">
+      <h2>전송중...</h2>
+      <p>잠시만 기다려주세요 🎄</p>
+    </div>
   </div>
 
-  <!-- 편지 페이지 -->
-  <div class="container page" id="letter-page">
-    <h1>🎁 은비 구님께 드리는 편지 🎁</h1>
-    <form>
-      <div class="form-group">
-        <label for="letter">마음을 담은 편지<span class="required">*</span></label>
-        <textarea id="letter" 
-            placeholder="소중한 마음을 담아 편지를 작성해주세요"
-            required></textarea>
+  <div class="container">
+    <!-- 한 줄 메시지 페이지 -->
+    <div class="page active" id="message-page">
+      <div class="progress-bar">
+        <div class="progress" style="width: 33%"></div>
       </div>
-      <div class="buttons">
-        <button type="button" onclick="prevPage('message-page')">◀ 이전</button>
-        <button type="button" onclick="nextPage('photo-page')">다음 ▶</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- 사진 업로드 페이지 -->
-  <div class="container page" id="photo-page">
-    <h1>🎁 은비 구님과의 추억 사진 🎁</h1>
-    <form id="final-form" onsubmit="return validateForm(event)">
-      <div class="form-group">
-        <label for="photo">추억이 담긴 사진<span class="required">*</span></label>
-        <input type="file" 
-               id="photo" 
-               accept="image/*" 
-               capture="environment"
-               onchange="previewImage(event)" 
-               required>
-        <div class="image-preview" id="preview">
-          이미지를 선택해주세요
+      <h1>🎄 크리스마스 한 줄 메시지 🎄</h1>
+      <form id="message-form">
+        <div class="form-group">
+          <label for="short-message">전하고 싶은 한 줄 메시지<span class="required">*</span></label>
+          <input type="text" id="short-message" placeholder="따뜻한 마음을 전해보세요" required>
+          <div class="error-message" id="message-error">메시지를 입력해주세요</div>
         </div>
-      </div>
+        <div class="buttons">
+          <button type="button" onclick="validateAndNext('message-page', 'letter-page')">다음 ▶</button>
+        </div>
+      </form>
+    </div>
 
-      <div class="form-group name-input">
-        <label for="sender-name">보내는 사람<span class="required">*</span></label>
-        <input type="text" 
-               id="sender-name" 
-               placeholder="이름을 입력해주세요" 
-               required
-               autocomplete="off">
+    <!-- 편지 페이지 -->
+    <div class="page" id="letter-page">
+      <div class="progress-bar">
+        <div class="progress" style="width: 66%"></div>
       </div>
+      <h1>🎄 크리스마스 편지 🎄</h1>
+      <form id="letter-form">
+        <div class="form-group">
+          <label for="letter">마음을 담은 편지<span class="required">*</span></label>
+          <textarea id="letter" placeholder="소중한 마음을 담아 편지를 작성해주세요" required></textarea>
+          <div class="error-message" id="letter-error">편지를 입력해주세요</div>
+        </div>
+        <div class="buttons">
+          <button type="button" onclick="prevPage('message-page')">◀ 이전</button>
+          <button type="button" onclick="validateAndNext('letter-page', 'photo-page')">다음 ▶</button>
+        </div>
+      </form>
+    </div>
 
-      <div class="buttons">
-        <button type="button" onclick="prevPage('letter-page')">◀ 이전</button>
-        <button type="submit">보내기 ✨</button>
+    <!-- 사진 업로드 페이지 -->
+    <div class="page" id="photo-page">
+      <div class="progress-bar">
+        <div class="progress" style="width: 100%"></div>
       </div>
-    </form>
+      <h1>🎄 크리스마스 사진 🎄</h1>
+      <form id="final-form">
+        <div class="form-group">
+          <label for="photo">추억이 담긴 사진<span class="required">*</span></label>
+          <input type="file" id="photo" accept="image/*" onchange="previewImage(event)" required>
+          <div class="image-preview" id="preview">
+            이미지 미리보기
+          </div>
+          <div class="error-message" id="photo-error">사진을 선택해주세요</div>
+        </div>
+
+        <div class="form-group name-input">
+          <label for="sender-name">보내는 사람<span class="required">*</span></label>
+          <input type="text" id="sender-name" placeholder="이름을 입력해주세요" required>
+          <div class="error-message" id="name-error">이름을 입력해주세요</div>
+        </div>
+
+        <div class="buttons">
+          <button type="button" onclick="prevPage('letter-page')">◀ 이전</button>
+          <button type="button" onclick="submitForm()">완료 ✨</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script>
-    let currentProgress = 33.33;
-    document.getElementById('progress').style.width = `${currentProgress}%`;
+    function validateAndNext(currentPageId, nextPageId) {
+      let isValid = true;
+      
+      if (currentPageId === 'message-page') {
+        const shortMessage = document.getElementById('short-message');
+        if (!shortMessage.value.trim()) {
+          document.getElementById('message-error').style.display = 'block';
+          isValid = false;
+        } else {
+          document.getElementById('message-error').style.display = 'none';
+        }
+      }
+      
+      if (currentPageId === 'letter-page') {
+        const letter = document.getElementById('letter');
+        if (!letter.value.trim()) {
+          document.getElementById('letter-error').style.display = 'block';
+          isValid = false;
+        } else {
+          document.getElementById('letter-error').style.display = 'none';
+        }
+      }
 
+      if (isValid) {
+        nextPage(nextPageId);
+      }
+    }
+
+    // 기존 함수들은 그대로 유지
     function nextPage(pageId) {
       document.querySelector('.page.active').classList.remove('active');
       document.getElementById(pageId).classList.add('active');
-      
-      currentProgress = pageId === 'letter-page' ? 66.66 : 100;
-      document.getElementById('progress').style.width = `${currentProgress}%`;
-      
       window.scrollTo(0, 0);
     }
 
     function prevPage(pageId) {
       document.querySelector('.page.active').classList.remove('active');
       document.getElementById(pageId).classList.add('active');
-      
-      currentProgress = pageId === 'message-page' ? 33.33 : 66.66;
-      document.getElementById('progress').style.width = `${currentProgress}%`;
-      
       window.scrollTo(0, 0);
     }
 
     function previewImage(event) {
       const preview = document.getElementById('preview');
       const file = event.target.files[0];
+      document.getElementById('photo-error').style.display = 'none';
       
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 200px; object-fit: contain;">`;
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 150px; object-fit: contain;">`;
         }
         reader.readAsDataURL(file);
       }
     }
 
-    function validateForm(event) {
-      event.preventDefault();
-      
+    async function submitForm() {
+      let isValid = true;
+      const shortMessage = document.getElementById('short-message').value;
+      const letter = document.getElementById('letter').value;
+      const photo = document.getElementById('photo').files[0];
       const senderName = document.getElementById('sender-name').value;
-      const photo = document.getElementById('photo').value;
-      
-      if (!senderName || !photo) {
-        alert('모든 필수 항목을 입력해주세요.');
-        return false;
+
+      if (!senderName) {
+        document.getElementById('name-error').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('name-error').style.display = 'none';
       }
-      
-      alert('메시지가 성공적으로 전송되었습니다! 🎄');
-      return false;
+
+      if (!photo) {
+        document.getElementById('photo-error').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('photo-error').style.display = 'none';
+      }
+
+      if (!isValid) return;
+
+      document.getElementById('loading').classList.add('active');
+
+      try {
+        const formData = new FormData();
+        formData.append('message', shortMessage);
+        formData.append('letter', letter);
+        formData.append('photo', photo);
+        formData.append('name', senderName);
+
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        alert('메시지가 성공적으로 전송되었습니다! 🎄');
+        resetForm();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('메시지 전송 중 오류가 발생했습니다. 다시 시도해주세요.');
+      } finally {
+        document.getElementById('loading').classList.remove('active');
+      }
     }
 
-    // iOS에서 가상 키보드 표시 시 뷰포트 조정 방지
-    const viewportMeta = document.createElement('meta');
-    viewportMeta.name = 'viewport';
-    viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
-    document.getElementsByTagName('head')[0].appendChild(viewportMeta);
+    function resetForm() {
+      document.getElementById('short-message').value = '';
+      document.getElementById('letter').value = '';
+      document.getElementById('photo').value = '';
+      document.getElementById('sender-name').value = '';
+      document.getElementById('preview').innerHTML = '이미지 미리보기';
+      nextPage('message-page');
+    }
   </script>
 </body>
 </html>
