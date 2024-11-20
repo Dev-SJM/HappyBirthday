@@ -14,6 +14,6 @@ jobs:
     - name: Deploy to production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        cd /home/ec2-user/HappyBirthday && docker build -t happy-birthday-upload .
+        cd /home/ubuntu/HappyBirthday && docker build -t happy-birthday-upload .
         docker stop happy-birthday-upload || true && docker rm happy-birthday-upload || true
         docker run -d --name happy-birthday-upload -p 80:3000 happy-birthday-upload:latest
