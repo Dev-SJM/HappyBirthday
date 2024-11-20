@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
-from config import id_key, secret_key, bucket_name
 from werkzeug.utils import secure_filename
 from botocore.exceptions import ClientError
+import os
 import mimetypes
 import boto3
 import uuid
@@ -11,6 +11,10 @@ app = Flask(__name__)
 @app.route("/")
 def hello():
     return render_template('upload.html')
+
+id_key = os.environ.get('AWS_ACCESS_KEY')
+secret_key = os.environ.get('AWS_SECRET_KEY')
+bucket_name = os.environ.get('AWS_BUCKET_NAME')
 
 # S3 클라이언트 설정
 s3_client = boto3.client(
