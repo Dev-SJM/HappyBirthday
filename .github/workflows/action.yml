@@ -10,10 +10,25 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        clean: true
     
     - name: Deploy to production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        cd /home/ubuntu/HappyBirthday && docker build -t happy-birthday-upload .
-        docker stop happy-birthday-upload || true && docker rm happy-birthday-upload || true
+        echo "Current working directory: $(pwd)"
+        echo "Repository contents:"
+        ls -la
+        
+        # Docker 빌드를 현재 체크아웃된 디렉토리에서 직접 실행
+        docker image rm -f happy-birthday-upload:latest || true
+        docker build --no-cache -t happy-birthday-upload .
+        
+        # 컨테이너 정리 및 재시작
+        docker stop happy-birthday-upload || true 
+        docker rm happy-birthday-upload -v || true
         docker run -d --name happy-birthday-upload -p 80:3000 happy-birthday-upload:latest
+        
+        echo "Deployment complete. Container status:"
+        docker ps -a | grep happy-birthday-upload
