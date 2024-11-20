@@ -10,9 +10,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        clean: true
+    
+    - name: Pull latest code
+        run: |
+          echo "Pulling latest code from main branch.."
+          git pull origin main
     
     - name: Deploy to production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
