@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from utils import allowed_file, upload_file_to_s3
 
 app = Flask(__name__)
+
+@app.route("/")
+def index_redirct():
+    return redirect(url_for('upload_message'))
     
 @app.route("/upload-message", methods=['GET', 'POST'])
 def upload_message():
