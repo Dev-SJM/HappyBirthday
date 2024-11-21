@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+</head>
+<body>
+  <!-- 네비게이션 탭 -->
+  <div class="nav-tabs">
+    <a href="{{ url_for('upload_message') }}" class="nav-tab">메시지</a>
+    <a href="{{ url_for('upload_letter') }}" class="nav-tab">편지</a>
+    <a href="{{ url_for('upload_photo') }}" class="nav-tab active">사진</a>
+  </div>
+
+  <!-- 눈 효과 -->
+  <div class="snow" style="left: 10%;">❄</div>
+  <div class="snow" style="left: 30%; animation-delay: -2s;">❄</div>
+  <div class="snow" style="left: 50%; animation-delay: -4s;">❄</div>
+  <div class="snow" style="left: 70%; animation-delay: -6s;">❄</div>
+  <div class="snow" style="left: 90%; animation-delay: -8s;">❄</div>
+
+  <!-- 로딩 표시 -->
+  <div class="loading" id="loading">
+    <div class="loading-content">
+      <h2>전송중...</h2>
+      <p>잠시만 기다려주세요 🎁</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page active">
+      <h1>🎁 은비 구님과의 추억 사진 🎁</h1>
+      <form id="photo-form">
+        <div class="form-group">
+          <label for="photo">추억이 담긴 사진<span class="required">*</span></label>
+          <input type="file" id="photo" accept="image/*" onchange="previewImage(event)" required>
+          <div class="image-preview" id="preview">
+            이미지 미리보기
+          </div>
+          <div class="error-message" id="photo-error">사진을 선택해주세요</div>
+        </div>
+        <div class="form-group name-input">
+          <label for="sender-name">보내는 사람<span class="required">*</span></label>
+          <input type="text" id="sender-name" placeholder="이름을 입력해주세요" required>
+          <div class="error-message" id="name-error">이름을 입력해주세요</div>
+        </div>
+        <div class="buttons">
+          <button type="button" onclick="submitPhoto()">사진 보내기 ✨</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function previewImage(event) {
+      const preview = document.getElementById('preview');
+      const file = event.target.files[0];
+      document.getElementById('photo-error').style.display = 'none';
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 150px; object-fit: contain;">`;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function submitPhoto() {
+      const photo = document.getElementById('photo').files[0];
+      const name = document.getElementById('sender-name').value;
+
+      if (!photo) {
+        document.getElementById('photo-error').style.display = 'block';
+        return;
+      } else {
+        document.getElementById('photo-error').style.display = 'none';
+      }
+
+      if (!name.trim()) {
+        document.getElementById('name-error').style.display = 'block';
+        return;
+      } else {
+        document.getElementById('name-error').style.display = 'none';
+      }
+
+      document.getElementById('loading').classList.add('active');
+
+      try {
+        const formData = new FormData();
+        formData.append('photo', photo);
+        formData.append('name', name);
+
+        const response = await fetch('/upload-photo', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        alert('사진이 성공적으로 전송되었습니다! 🎁');
+        document.getElementById('photo-form').reset();
+        document.getElementById('preview').innerHTML = '이미지 미리보기';
+      } catch (error) {
+        console.error('Error:', error);
+        alert('사진 전송 중 오류가 발생했습니다. 다시 시도해주세요.');
+      } finally {
+        document.getElementById('loading').classList.remove('active');
+      }
+    }
+  </script>
+</body>
+</html>

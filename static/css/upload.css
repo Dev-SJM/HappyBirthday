@@ -205,3 +205,41 @@
     margin-top: 0.3rem;
     display: none;
   }
+
+  .nav-tabs {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 2px solid #1a472a;
+  }
+
+  .nav-tab {
+    flex: 1;
+    padding: 1rem;
+    text-align: center;
+    color: #1a472a;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-tab.active {
+    background: #1a472a;
+    color: white;
+  }
+
+  .nav-tab:hover {
+    background: #c41e3a;
+    color: white;
+  }
+
+  /* 기존 progress-bar 제거 */
+  .progress-bar {
+    display: none;
+  }
