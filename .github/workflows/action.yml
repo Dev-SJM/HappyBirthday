@@ -35,7 +35,7 @@ jobs:
         docker stop happy-birthday-upload || true 
         docker rm happy-birthday-upload -v || true
         docker run -d --name happy-birthday-upload \
-          -p 80:3000 \
+          -p 3000:3000 \
           -e AWS_ACCESS_KEY="${AWS_ACCESS_KEY}" \
           -e AWS_SECRET_KEY="${AWS_SECRET_KEY}" \
           -e AWS_BUCKET_NAME="${AWS_BUCKET_NAME}" \
