@@ -31,7 +31,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def upload_file_to_s3(name, file):
+def upload_file_to_s3(name, file, path):
     """
     S3에 파일을 업로드하고 URL을 반환
     """
@@ -42,21 +42,18 @@ def upload_file_to_s3(name, file):
         # UUID를 사용하여 고유한 파일명 생성
         new_filename = f"{uuid.uuid4()}.{file_extension}"
         
-        # 파일 경로 설정
-        file_path = f"{name}/{new_filename}"
-        
         # S3에 업로드
         s3_client.upload_fileobj(
             file,
             str(bucket_name),
-            file_path,
+            path + new_filename,
             ExtraArgs={
                 'ContentType': file.content_type
             }
         )
         
         # S3 URL 생성
-        url = f"https://{bucket_name}.s3.ap-northeast-2.amazonaws.com/{file_path}"
+        url = f"https://{bucket_name}.s3.ap-northeast-2.amazonaws.com/{path + new_filename}"
         
         return url
         

@@ -35,14 +35,33 @@ def upload_message():
 def upload_letter():
     if request.method == 'POST':
         try:
-            letter = request.form['letter']
+            if 'letter' not in request.files:
+                return jsonify({'error': '파일이 전송되지 않았습니다.'}), 400
+                
+            letter = request.files['letter']
+            if not letter or not letter.filename:
+                return jsonify({'error': '파일이 선택되지 않았습니다.'}), 400
+
             name = request.form['name']
+            if not name:
+                return jsonify({'error': '이름이 입력되지 않았습니다.'}), 400
+                
+            if not allowed_file(letter.filename):
+                return jsonify({'error': '허용되지 않는 파일 형식입니다. (png, jpg, jpeg, gif만 가능)'}), 400
+            
+            path = f"{name}/letter/"
+
+            # S3에 파일 업로드
+            letter_url = upload_file_to_s3(name, letter, path)
+            
+            if not letter_url:
+                return jsonify({'error': '파일 업로드에 실패했습니다.'}), 500
 
             # DynamoDB에 저장
             success = save_to_dynamodb(
                 name=name,
                 type='letter',
-                data=letter
+                data=letter_url
             )
             
             if not success:
@@ -73,8 +92,10 @@ def upload_photo():
             if not allowed_file(photo.filename):
                 return jsonify({'error': '허용되지 않는 파일 형식입니다. (png, jpg, jpeg, gif만 가능)'}), 400
             
+            path = f"{name}/photo/"
+            
             # S3에 파일 업로드
-            photo_url = upload_file_to_s3(name, photo)
+            photo_url = upload_file_to_s3(name, photo, path)
             
             if not photo_url:
                 return jsonify({'error': '파일 업로드에 실패했습니다.'}), 500

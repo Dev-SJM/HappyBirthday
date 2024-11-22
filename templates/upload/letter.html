@@ -4,6 +4,76 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+  <style>
+    /* 다운로드 버튼 스타일 추가 */
+    .download-section {
+      margin-bottom: 2rem;
+      text-align: center;
+      padding: 1rem;
+      background-color: rgba(26, 71, 42, 0.1);
+      border-radius: 12px;
+    }
+
+    .download-text {
+      color: #1a472a;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .download-button {
+      background-color: #1a472a;
+      color: white;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .download-button:hover {
+      background-color: #143522;
+    }
+
+    .section-divider {
+      border-top: 2px dashed #1a472a;
+      margin: 2rem 0;
+    }
+
+    /* 파일 업로드 input 스타일 수정 */
+    .file-input-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .file-input-label {
+      display: inline-block;
+      padding: 0.8rem;
+      background-color: white;
+      border: 2px solid #1a472a;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      color: #1a472a;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .file-name {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
   <!-- 네비게이션 탭 -->
@@ -31,17 +101,42 @@
   <div class="container">
     <div class="page active">
       <h1>🎁 은비 구님께 드리는 편지 🎁</h1>
+      
+      <!-- 편지지 양식 다운로드 섹션 -->
+      <div class="download-section">
+        <p class="download-text">아래 버튼을 눌러 편지지 양식을 다운로드 받은 후 작성해주시고 이쁘게 꾸며주세요!</p>
+        <button onclick="downloadTemplate()" class="download-button">
+          편지지 양식 다운로드 📝
+        </button>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- 편지 제출 폼 -->
       <form id="letter-form">
         <div class="form-group">
-          <label for="letter">마음을 담은 편지<span class="required">*</span></label>
-          <textarea id="letter" placeholder="소중한 마음을 담아 편지를 작성해주세요" required></textarea>
-          <div class="error-message" id="letter-error">편지를 입력해주세요</div>
+          <label>작성하신 편지<span class="required">*</span></label>
+          <div class="file-input-container">
+            <label for="letter-file" class="file-input-label">
+              작성하신 편지를 선택해주세요
+            </label>
+            <input type="file" 
+                   id="letter-file" 
+                   class="file-input"
+                   accept=".jpg,.jpeg,.png,.pdf"
+                   onChange="updateFileName(this)"
+                   required>
+            <div class="file-name" id="file-name"></div>
+          </div>
+          <div class="error-message" id="letter-error">편지 파일을 선택해주세요</div>
         </div>
+        
         <div class="form-group name-input">
           <label for="sender-name">보내는 사람<span class="required">*</span></label>
           <input type="text" id="sender-name" placeholder="이름을 입력해주세요" required>
           <div class="error-message" id="name-error">이름을 입력해주세요</div>
         </div>
+        
         <div class="buttons">
           <button type="button" onclick="submitLetter()">편지 보내기 ✨</button>
         </div>
@@ -50,11 +145,34 @@
   </div>
 
   <script>
+    function downloadTemplate() {
+      // 편지지 양식 파일 경로
+      const templateUrl = "{{ url_for('static', filename='templates/letter-template.pdf') }}";
+      
+      // 다운로드 링크 생성 및 클릭
+      const link = document.createElement('a');
+      link.href = templateUrl;
+      link.download = '은비구님_편지지양식.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function updateFileName(input) {
+      const fileNameDiv = document.getElementById('file-name');
+      if (input.files && input.files[0]) {
+        fileNameDiv.textContent = input.files[0].name;
+        document.getElementById('letter-error').style.display = 'none';
+      } else {
+        fileNameDiv.textContent = '';
+      }
+    }
+
     async function submitLetter() {
-      const letter = document.getElementById('letter').value;
+      const letterFile = document.getElementById('letter-file').files[0];
       const name = document.getElementById('sender-name').value;
 
-      if (!letter.trim()) {
+      if (!letterFile) {
         document.getElementById('letter-error').style.display = 'block';
         return;
       } else {
@@ -72,7 +190,7 @@
 
       try {
         const formData = new FormData();
-        formData.append('letter', letter);
+        formData.append('letter', letterFile);
         formData.append('name', name);
 
         const response = await fetch('/upload-letter', {
@@ -84,6 +202,7 @@
 
         alert('편지가 성공적으로 전송되었습니다! 🎁');
         document.getElementById('letter-form').reset();
+        document.getElementById('file-name').textContent = '';
       } catch (error) {
         console.error('Error:', error);
         alert('편지 전송 중 오류가 발생했습니다. 다시 시도해주세요.');
