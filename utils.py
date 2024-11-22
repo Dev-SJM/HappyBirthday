@@ -1,4 +1,5 @@
 from botocore.exceptions import ClientError
+from datetime import datetime
 import os
 import boto3
 import uuid
@@ -14,6 +15,15 @@ s3_client = boto3.client(
     aws_secret_access_key=secret_key,
     region_name="ap-northeast-2"
 )
+
+# DynamoDB 설정
+dynamodb = boto3.resource(
+    'dynamodb',
+    aws_access_key_id=id_key,
+    aws_secret_access_key=secret_key,
+    region_name="ap-northeast-2"
+)
+table = dynamodb.Table('HappyBirthday')  # 테이블 이름 지정
 
 def allowed_file(filename):
     """파일 확장자 검사"""
@@ -56,3 +66,20 @@ def upload_file_to_s3(name, file):
     except Exception as e:
         print(f"예상치 못한 에러: {str(e)}")
         return None
+
+def save_to_dynamodb(name, type, data):
+    """DynamoDB에 데이터 저장"""
+    try:
+        item = {
+            'id': str(uuid.uuid4()),  # 고유 ID 생성
+            'name': name,
+            'type': type,
+            'data': data,
+            'timestamp': datetime.now().isoformat()  # 타임스탬프 추가
+        }
+        
+        response = table.put_item(Item=item)
+        return True if response['ResponseMetadata']['HTTPStatusCode'] == 200 else False
+    except Exception as e:
+        print(f"DynamoDB 저장 오류: {str(e)}")
+        return False

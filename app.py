@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-from utils import allowed_file, upload_file_to_s3
+from utils import allowed_file, upload_file_to_s3, save_to_dynamodb
 
 app = Flask(__name__)
 
@@ -13,8 +13,17 @@ def upload_message():
         try:
             message = request.form['message']
             name = request.form['name']
-            print(message, name)
-            # 메시지 저장 로직
+
+            # DynamoDB에 저장
+            success = save_to_dynamodb(
+                name=name,
+                type='message',
+                data=message
+            )
+            
+            if not success:
+                return jsonify({'error': 'DB 저장 실패'}), 500
+            
             return jsonify({'message': '메시지가 성공적으로 저장되었습니다.'})
         except Exception as e:
             print(f"메시지 업로드 중 에러: {str(e)}")
@@ -28,8 +37,17 @@ def upload_letter():
         try:
             letter = request.form['letter']
             name = request.form['name']
-            print(letter, name)
-            # 편지 저장 로직
+
+            # DynamoDB에 저장
+            success = save_to_dynamodb(
+                name=name,
+                type='letter',
+                data=letter
+            )
+            
+            if not success:
+                return jsonify({'error': 'DB 저장 실패'}), 500
+            
             return jsonify({'message': '편지가 성공적으로 저장되었습니다.'})
         except Exception as e:
             print(f"편지 업로드 중 에러: {str(e)}")
@@ -61,12 +79,17 @@ def upload_photo():
             if not photo_url:
                 return jsonify({'error': '파일 업로드에 실패했습니다.'}), 500
             
-            print(f"업로드된 파일 URL: {photo_url}")
+            # DynamoDB에 저장
+            success = save_to_dynamodb(
+                name=name,
+                type='photo',
+                data=photo_url  # S3 URL 저장
+            )
             
-            return jsonify({
-                'message': '성공적으로 업로드되었습니다.',
-                'photo_url': photo_url
-            })
+            if not success:
+                return jsonify({'error': 'DB 저장 실패'}), 500
+            
+            return jsonify({'message': '성공적으로 업로드되었습니다.'})
             
         except Exception as e:
             print(f"업로드 처리 중 에러 발생: {str(e)}")
