@@ -79,9 +79,6 @@ def upload_photo():
             name = request.form['name']
             if not name:
                 return jsonify({'error': '이름이 입력되지 않았습니다.'}), 400
-                
-            if not allowed_file(photo.filename):
-                return jsonify({'error': '허용되지 않는 파일 형식입니다. (png, jpg, jpeg, gif만 가능)'}), 400
             
             path = f"{name}/photo/"
             
