@@ -27,8 +27,16 @@ table = dynamodb.Table('HappyBirthday')  # 테이블 이름 지정
 
 def allowed_file(filename):
     """파일 확장자 검사"""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    ALLOWED_EXTENSIONS = {
+        'png', 'jpg', 'jpeg', 'gif',  # 기본 이미지 포맷
+        'heic', 'heif',               # iOS 이미지 포맷
+        'webp',                       # 구글/안드로이드 이미지 포맷
+        'bmp',                        # 기본 비트맵
+        'tiff', 'tif'                 # 고품질 이미지
+    }
+    if '.' not in filename:
+        return False
+    return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def upload_file_to_s3(name, file, path):
